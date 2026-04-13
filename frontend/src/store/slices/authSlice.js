@@ -29,7 +29,12 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: { user: null, loading: false, error: null, isAuthenticated: false },
   reducers: {
-    logout: (state) => { state.user = null; state.isAuthenticated = false; localStorage.removeItem('token'); sessionStorage.removeItem('token'); },
+    logout: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+    },
     clearError: (state) => { state.error = null; },
   },
   extraReducers: (builder) => {

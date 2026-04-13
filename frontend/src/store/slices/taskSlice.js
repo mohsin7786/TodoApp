@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './authSlice';
 import api from '../../utils/api';
 
 export const fetchTasks = createAsyncThunk('tasks/fetch', async (params) => {
@@ -37,7 +38,7 @@ const taskSlice = createSlice({
   reducers: {
     reorderLocal: (state, action) => { state.items = action.payload; },
   },
-  extraReducers: (builder) => {
+extraReducers: (builder) => {
     builder
       .addCase(fetchTasks.pending, (s) => { s.loading = true; })
       .addCase(fetchTasks.fulfilled, (s, a) => { s.loading = false; s.items = a.payload; })
@@ -45,7 +46,11 @@ const taskSlice = createSlice({
       .addCase(createTask.fulfilled, (s, a) => { s.items.unshift(a.payload); })
       .addCase(updateTask.fulfilled, (s, a) => { const i = s.items.findIndex(t => t._id === a.payload._id); if (i !== -1) s.items[i] = a.payload; })
       .addCase(deleteTask.fulfilled, (s, a) => { s.items = s.items.filter(t => t._id !== a.payload); })
-      .addCase(fetchStats.fulfilled, (s, a) => { s.stats = a.payload; });
+      .addCase(fetchStats.fulfilled, (s, a) => { s.stats = a.payload; })
+      .addCase(logout, (state) => {
+        state.items = [];
+        state.stats = null;
+      });
   },
 });
 
