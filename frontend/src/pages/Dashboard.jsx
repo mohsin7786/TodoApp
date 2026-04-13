@@ -30,6 +30,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
+        <h5>Created By Momin Brothers</h5>
         <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl sm:text-3xl font-bold">
           Welcome back, {user?.name?.split(' ')[0]} 👋
         </motion.h1>

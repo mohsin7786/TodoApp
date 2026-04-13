@@ -11,7 +11,10 @@ import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }));
+app.use(cors({ origin: [
+    'http://localhost:5173',
+    'https://todo-app-five-rho-73.vercel.app'
+  ],  credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static('uploads'));
 
