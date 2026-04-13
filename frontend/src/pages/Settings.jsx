@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toggleTheme } from '../store/slices/themeSlice';
 import { logout } from '../store/slices/authSlice';
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast';
 
 export default function Settings() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { mode } = useSelector((s) => s.theme);
 
   const exportTasks = async (format) => {
@@ -22,9 +24,15 @@ export default function Settings() {
     } catch { toast.error('Export failed'); }
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success('Logout successful!', { position: 'top-right', duration: 2000 });
+    navigate('/');
+  };
+
   const handleDeleteAccount = async () => {
     if (!confirm('Are you sure? This action cannot be undone.')) return;
-    try { await api.delete('/users/account'); dispatch(logout()); toast.success('Account deleted'); } catch { toast.error('Failed to delete account'); }
+    try { await api.delete('/users/account'); dispatch(logout()); toast.success('Account deleted'); navigate('/'); } catch { toast.error('Failed to delete account'); }
   };
 
   return (
@@ -51,9 +59,14 @@ export default function Settings() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-6 border-red-200 dark:border-red-900/30">
         <h2 className="text-lg font-bold text-red-600 mb-4">Danger Zone</h2>
-        <button onClick={handleDeleteAccount} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 font-medium hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-sm">
-          <Trash2 className="w-4 h-4" />Delete Account
-        </button>
+        <div className="space-y-3">
+          <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500 font-medium hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors text-sm w-full border border-amber-200 dark:border-amber-800/30">
+            <LogOut className="w-4 h-4" />Logout
+          </button>
+          <button onClick={handleDeleteAccount} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-500 font-medium hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-sm w-full border border-red-200 dark:border-red-800/30">
+            <Trash2 className="w-4 h-4" />Delete Account
+          </button>
+        </div>
       </motion.div>
     </div>
   );
