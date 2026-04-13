@@ -56,7 +56,7 @@ export default function Landing() {
       </main>
 
       <footer className="text-center py-8 text-sm text-slate-400 border-t border-slate-100 dark:border-white/5">
-        © 2024 TaskFlow. Built with ❤️
+        © 2026 TaskFlow. Built with M❤️MIN
       </footer>
     </div>
   );
