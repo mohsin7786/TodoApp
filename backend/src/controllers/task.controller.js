@@ -3,7 +3,7 @@ import Task from '../models/Task.model.js';
 export const getTasks = async (req, res, next) => {
   try {
     const { search, completed, priority, category, startDate, endDate } = req.query;
-    const filter = { user: req.user._id, deletedAt: null };
+    const filter = { user: req.user._id, $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] };
     if (completed !== undefined) filter.completed = completed === 'true';
     if (priority) filter.priority = priority;
     if (category) filter.category = category;
@@ -81,25 +81,36 @@ export const bulkDeleteCompleted = async (req, res, next) => {
 export const getStats = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    const baseFilter = { user: userId, $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] };
+
     const [total, completed, today, overdue] = await Promise.all([
-      Task.countDocuments({ user: userId, deletedAt: null }),
-      Task.countDocuments({ user: userId, completed: true, deletedAt: null }),
-      Task.countDocuments({ user: userId, deletedAt: null, dueDate: { $gte: new Date(new Date().setHours(0,0,0,0)), $lte: new Date(new Date().setHours(23,59,59,999)) } }),
-      Task.countDocuments({ user: userId, completed: false, deletedAt: null, dueDate: { $lt: new Date(new Date().setHours(0,0,0,0)) } }),
+      Task.countDocuments(baseFilter),
+      Task.countDocuments({ ...baseFilter, completed: true }),
+      Task.countDocuments({ ...baseFilter, dueDate: { $gte: new Date(new Date().setHours(0,0,0,0)), $lte: new Date(new Date().setHours(23,59,59,999)) } }),
+      Task.countDocuments({ ...baseFilter, completed: false, dueDate: { $lt: new Date(new Date().setHours(0,0,0,0)) } }),
     ]);
-    // Weekly data
+
     const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
     const weeklyCompleted = await Task.aggregate([
-      { $match: { user: userId, completedAt: { $gte: weekAgo }, deletedAt: null } },
+      { $match: { user: userId, completedAt: { $gte: weekAgo }, $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] } },
       { $group: { _id: { $dayOfWeek: '$completedAt' }, count: { $sum: 1 } } },
     ]);
-    res.json({ total, completed, pending: total - completed, today, overdue, productivity: total > 0 ? Math.round((completed / total) * 100) : 0, weeklyCompleted });
+
+    res.json({
+      total,
+      completed,
+      pending: total - completed,
+      today,
+      overdue,
+      productivity: total > 0 ? Math.round((completed / total) * 100) : 0,
+      weeklyCompleted
+    });
   } catch (err) { next(err); }
 };
 
 export const exportTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.find({ user: req.user._id, deletedAt: null }).lean();
+    const tasks = await Task.find({ user: req.user._id, $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] }).lean();
     const format = req.query.format || 'json';
     if (format === 'csv') {
       const headers = 'title,description,priority,category,completed,dueDate,tags\n';
