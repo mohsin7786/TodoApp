@@ -1,8 +1,10 @@
-import { NavLink } from 'react-router-dom';
+import { memo, useCallback } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import { toggleTheme } from '../../store/slices/themeSlice';
 import { LayoutDashboard, CheckSquare, CalendarDays, User, Settings, Users, LogOut, Sun, Moon, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const links = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -13,10 +15,21 @@ const links = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function Sidebar() {
+function Sidebar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { mode } = useSelector((s) => s.theme);
   const { user } = useSelector((s) => s.auth);
+
+  const handleLogout = useCallback(() => {
+    dispatch(logout());
+    toast.success('Logout successful!', { position: 'top-right', duration: 2000 });
+    navigate('/');
+  }, [dispatch, navigate]);
+
+  const handleThemeToggle = useCallback(() => {
+    dispatch(toggleTheme());
+  }, [dispatch]);
 
   return (
     <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-white/80 dark:bg-[#1a1b2e]/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-white/5 z-30">
@@ -34,10 +47,10 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="px-3 py-4 border-t border-slate-100 dark:border-white/5 space-y-1">
-        <button onClick={() => dispatch(toggleTheme())} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 w-full transition-all">
+        <button onClick={handleThemeToggle} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 w-full transition-all duration-200 hover:shadow-sm">
           {mode === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}{mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
-        <button onClick={() => dispatch(logout())} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 w-full transition-all">
+        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 w-full transition-all duration-200 hover:shadow-sm">
           <LogOut className="w-5 h-5" />Logout
         </button>
       </div>
@@ -52,3 +65,5 @@ export default function Sidebar() {
     </aside>
   );
 }
+
+export default memo(Sidebar);
