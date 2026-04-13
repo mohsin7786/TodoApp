@@ -1,6 +1,7 @@
 {
-  "name": "TaskFlow",
+  "name": "TaskFlow - Todo & Task Manager",
   "short_name": "TaskFlow",
+  "description": "A premium todo and task management app",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
